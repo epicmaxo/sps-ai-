@@ -23,6 +23,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'apps.core',
+    'apps.projects',
+    'apps.models',
     'apps.ai',
 ]
 
