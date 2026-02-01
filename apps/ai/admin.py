@@ -17,7 +17,7 @@ class MessageInline(admin.TabularInline):
 
 @admin.register(Conversation)
 class ConversationAdmin(admin.ModelAdmin):
-    list_display = ['title', 'user', 'project', 'model', 'message_count', 'created_at']
+    list_display = ['title', 'user', 'project_id', 'model_id', 'message_count', 'created_at']
     list_filter = ['created_at', 'user']
     search_fields = ['title', 'user__email']
     readonly_fields = ['id', 'message_count', 'created_at', 'updated_at']
@@ -52,7 +52,7 @@ class DocumentAdmin(admin.ModelAdmin):
 
 @admin.register(Suggestion)
 class SuggestionAdmin(admin.ModelAdmin):
-    list_display = ['title', 'suggestion_type', 'model', 'element_name', 'is_dismissed', 'created_at']
+    list_display = ['title', 'suggestion_type', 'model_id', 'element_name', 'is_dismissed', 'created_at']
     list_filter = ['suggestion_type', 'is_dismissed', 'created_at']
     search_fields = ['title', 'message', 'element_name']
     readonly_fields = ['id', 'created_at', 'updated_at']
