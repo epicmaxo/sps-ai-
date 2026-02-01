@@ -10,8 +10,6 @@ import uuid
 from django.db import models
 from django.conf import settings
 from apps.core.models import TimeStampedModel
-from apps.projects.models import Project
-from apps.models.models import PipelineModel
 
 
 class Conversation(TimeStampedModel):
@@ -34,21 +32,9 @@ class Conversation(TimeStampedModel):
         related_name='ai_conversations',
     )
     
-    # Optional context
-    project = models.ForeignKey(
-        Project,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='ai_conversations',
-    )
-    model = models.ForeignKey(
-        PipelineModel,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='ai_conversations',
-    )
+    # Optional context (Stored as IDs for stateless service)
+    project_id = models.CharField(max_length=100, null=True, blank=True)
+    model_id = models.CharField(max_length=100, null=True, blank=True)
     
     title = models.CharField(
         max_length=255,
@@ -243,11 +229,7 @@ class Suggestion(TimeStampedModel):
         editable=False,
     )
     
-    model = models.ForeignKey(
-        PipelineModel,
-        on_delete=models.CASCADE,
-        related_name='ai_suggestions',
-    )
+    model_id = models.CharField(max_length=100)
     
     suggestion_type = models.CharField(
         max_length=20,
