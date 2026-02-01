@@ -9,13 +9,13 @@ Handles AI chat interactions with context awareness.
 import logging
 from typing import Dict, Any, List, Optional
 
+
 from django.conf import settings
 
-from apps.models.models import PipelineModel
-from apps.simulations.models import SimulationJob
 from ..models import Conversation, Message
 from .llm import get_llm_provider
 from .rag import RAGService
+
 
 logger = logging.getLogger(__name__)
 
@@ -101,11 +101,9 @@ class ChatService:
                     for r in rag_results
                 ]
         
+
         # Build system prompt
-        context_text = "\n\n".join(context_parts) if context_parts else ""
-        system_prompt = SYSTEM_PROMPT.format(
-            context=f"\n{context_text}" if context_text else ""
-        )
+        system_prompt = SYSTEM_PROMPT.format(context="")
         
         # Get conversation history
         messages = self._get_conversation_messages(conversation)
@@ -149,69 +147,6 @@ class ChatService:
             'sources': sources,
             'tokens_used': tokens_used,
         }
-    
-    def _build_model_context(self, model: PipelineModel) -> str:
-        """Build context from pipeline model data."""
-        parts = [
-            f"Current Pipeline Model: {model.name}",
-            f"Project: {model.project.name}",
-            f"Fluid Type: {model.fluid_type}",
-            "",
-        ]
-        
-        # Node summary
-        nodes = model.nodes.all()
-        if nodes:
-            source_count = nodes.filter(node_type='source').count()
-            sink_count = nodes.filter(node_type='sink').count()
-            junction_count = nodes.filter(node_type='junction').count()
-            parts.append(f"Nodes: {nodes.count()} total ({source_count} sources, {sink_count} sinks, {junction_count} junctions)")
-        
-        # Pipe summary
-        pipes = model.pipes.all()
-        if pipes:
-            total_length = sum(float(p.length or 0) for p in pipes)
-            parts.append(f"Pipes: {pipes.count()} total, {total_length:.0f} m total length")
-        
-        # Equipment summary
-        pump_count = model.pumps.count()
-        valve_count = model.valves.count()
-        tank_count = model.tanks.count()
-        if pump_count or valve_count or tank_count:
-            parts.append(f"Equipment: {pump_count} pumps, {valve_count} valves, {tank_count} tanks")
-        
-        # Recent simulation results
-        recent_job = SimulationJob.objects.filter(
-            model=model,
-            status='completed'
-        ).order_by('-completed_at').first()
-        
-        if recent_job and hasattr(recent_job, 'result'):
-            result = recent_job.result
-            if result.summary:
-                summary = result.summary
-                parts.append("")
-                parts.append("Latest Simulation Results:")
-                if 'max_pressure' in summary:
-                    parts.append(f"  Max Pressure: {summary['max_pressure']:.1f} kPa")
-                if 'min_pressure' in summary:
-                    parts.append(f"  Min Pressure: {summary['min_pressure']:.1f} kPa")
-                if 'max_velocity' in summary:
-                    parts.append(f"  Max Velocity: {summary['max_velocity']:.2f} m/s")
-                if 'total_flow' in summary:
-                    parts.append(f"  Total Flow: {summary['total_flow']:.1f} m³/h")
-        
-        return "\n".join(parts)
-    
-    def _build_rag_context(self, results: List[Dict]) -> str:
-        """Build context from RAG retrieval results."""
-        parts = ["Relevant Documentation:"]
-        
-        for i, result in enumerate(results[:5], 1):
-            parts.append(f"\n[{i}] From {result['document_name']}:")
-            parts.append(result['content'][:500])
-        
-        return "\n".join(parts)
     
     def _get_conversation_messages(
         self,

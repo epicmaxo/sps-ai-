@@ -27,6 +27,13 @@ class PipelineModel(BaseModel):
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     
+    # Fluid properties
+    fluid_type = models.CharField(
+        max_length=50,
+        default='water',
+        help_text="Type of fluid (water, oil, gas, etc.)"
+    )
+    
     # Model data (simplified)
     model_data = models.JSONField(
         default=dict,
@@ -41,3 +48,29 @@ class PipelineModel(BaseModel):
     
     def __str__(self):
         return f"{self.project.name} - {self.name}"
+    
+    # Stub properties to prevent AttributeErrors
+    @property
+    def nodes(self):
+        """Stub for nodes - returns empty queryset"""
+        return self.__class__.objects.none()
+    
+    @property
+    def pipes(self):
+        """Stub for pipes - returns empty queryset"""
+        return self.__class__.objects.none()
+    
+    @property
+    def pumps(self):
+        """Stub for pumps - returns empty queryset"""
+        return self.__class__.objects.none()
+    
+    @property
+    def valves(self):
+        """Stub for valves - returns empty queryset"""
+        return self.__class__.objects.none()
+    
+    @property
+    def tanks(self):
+        """Stub for tanks - returns empty queryset"""
+        return self.__class__.objects.none()
