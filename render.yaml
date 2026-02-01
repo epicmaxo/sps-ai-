@@ -3,7 +3,7 @@ services:
     name: sps-ai
     env: python
     buildCommand: "pip install -r requirements.txt && python manage.py migrate"
-    startCommand: "gunicorn sps_ai.wsgi:application"
+    startCommand: "gunicorn sps_ai.wsgi:application --bind 0.0.0.0:$PORT"
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
