@@ -42,6 +42,7 @@ class PipelineModel(BaseModel):
     )
     
     class Meta:
+        app_label = 'models'
         ordering = ['-created_at']
         verbose_name = 'Pipeline Model'
         verbose_name_plural = 'Pipeline Models'

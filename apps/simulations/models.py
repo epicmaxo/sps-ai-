@@ -46,6 +46,7 @@ class SimulationJob(BaseModel):
     )
     
     class Meta:
+        app_label = 'simulations'
         ordering = ['-created_at']
         verbose_name = 'Simulation Job'
         verbose_name_plural = 'Simulation Jobs'

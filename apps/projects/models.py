@@ -28,6 +28,7 @@ class Project(BaseModel):
     description = models.TextField(blank=True)
     
     class Meta:
+        app_label = 'projects'
         ordering = ['-created_at']
         verbose_name = 'Project'
         verbose_name_plural = 'Projects'
