@@ -23,10 +23,25 @@ app.add_middleware(
 # Startup
 @app.on_event("startup")
 def on_startup():
-    create_db_and_tables()
+    print("--- Starting SPS AI Service ---")
+    try:
+        create_db_and_tables()
+        print("--- Database Connected & Tables Created ---")
+    except Exception as e:
+        print(f"CRITICAL ERROR: Database connection failed: {e}")
 
 # OpenAI Client
-openai_client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+api_key = os.environ.get("OPENAI_API_KEY")
+if not api_key:
+    print("WARNING: OPENAI_API_KEY not set in environment. Chat endpoints will fail.")
+    openai_client = None
+else:
+    try:
+        openai_client = openai.OpenAI(api_key=api_key)
+        print("--- OpenAI Client Initialized ---")
+    except Exception as e:
+        print(f"ERROR: Could not initialize OpenAI Client: {e}")
+        openai_client = None
 
 # --- Pydantic Schemas (API Contracts) ---
 class ChatRequest(BaseModel):
