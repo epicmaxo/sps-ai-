@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException, Body
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 from sqlmodel import Session, select
 from database import engine, create_db_and_tables, Conversation, Message, get_session
 from typing import List, Optional
@@ -10,6 +11,13 @@ from datetime import datetime
 
 # Initialize App
 app = FastAPI(title="SPS AI Minimal")
+
+# --- UI Endpoint ---
+@app.get("/chat-ui", response_class=HTMLResponse)
+async def chat_ui():
+    with open("templates/chat_iframe.html", "r", encoding="utf-8") as f:
+        html_content = f.read()
+    return HTMLResponse(content=html_content, status_code=200)
 
 # CORS
 app.add_middleware(
