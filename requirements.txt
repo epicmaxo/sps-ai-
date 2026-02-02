@@ -5,3 +5,4 @@ openai
 python-dotenv
 psycopg2-binary
 annotated-types
+gunicorn
