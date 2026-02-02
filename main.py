@@ -23,6 +23,7 @@ app.add_middleware(
 # Startup
 @app.on_event("startup")
 def on_startup():
+    print("--- RELAUNCHING WITH ROBUST STARTUP FIXES ---")
     print("--- Starting SPS AI Service ---")
     try:
         create_db_and_tables()
