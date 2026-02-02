@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: sps-ai
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: OPENAI_API_KEY
+        generate: false
+      - key: DATABASE_URL
+        generate: false
