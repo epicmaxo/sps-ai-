@@ -7,66 +7,74 @@
     <title>SPS AI</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
+        /* Elite Zinc Palette */
         :root {
-            /* Notion Light Mode Palette */
-            --bg-body: #ffffff;
-            --bg-cursor: #f2f3f5;
-            /* Hover/Selection */
-            --text-main: #37352f;
-            --text-muted: #787774;
-            --border-subtle: #e9e9e8;
-            --shadow-card: rgba(15, 15, 15, 0.05);
-            --shadow-input: rgba(15, 15, 15, 0.1);
+            /* Backgrounds */
+            --bg-body: #fafafa;
+            /* Zinc-50ish */
+            --bg-card: #ffffff;
+            --bg-bubble-user: #18181b;
+            /* Zinc-900 */
+            --bg-bubble-ai: transparent;
 
-            /* Input & Accents */
-            --bg-input: #ffffff;
-            --border-input: #e0e0e0;
-            --accent-blue: #007aff;
-            --user-bubble: #f0f0ef;
-            /* Very subtle grey for user */
+            /* Text */
+            --text-main: #27272a;
+            /* Zinc-800 */
+            --text-muted: #71717a;
+            /* Zinc-500 */
+            --text-inverted: #ffffff;
 
-            /* Dims */
-            --radius-lg: 12px;
-            --radius-pill: 100px;
-            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            /* Borders & Shadows */
+            --border-subtle: #e4e4e7;
+            /* Zinc-200 */
+            --shadow-float: 0 4px 20px -2px rgba(0, 0, 0, 0.08);
+
+            /* Suggestions */
+            --bg-chip: #ffffff;
+            --border-chip: #e4e4e7;
+            --hover-chip: #f4f4f5;
+
+            /* Dimensions */
+            --radius-xl: 16px;
+            --radius-md: 8px;
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
         * {
             box-sizing: border-box;
         }
 
+        html,
         body {
+            height: 100%;
+            width: 100%;
             margin: 0;
             padding: 0;
             font-family: var(--font-family);
             background-color: var(--bg-body);
             color: var(--text-main);
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
             overflow: hidden;
             -webkit-font-smoothing: antialiased;
         }
 
-        /* --- Chat Scroll Area --- */
+        /* --- Chat Area --- */
         #chat-container {
-            flex: 1;
+            height: 100%;
             overflow-y: auto;
-            padding: 24px 20px 140px 20px;
-            /* Deep bottom padding for floating input */
+            /* Bottom padding clears the input area */
+            padding: 20px 20px 160px 20px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 24px;
         }
 
-        /* Scrollbar */
         #chat-container::-webkit-scrollbar {
-            width: 6px;
+            width: 4px;
         }
 
         #chat-container::-webkit-scrollbar-thumb {
-            background-color: rgba(0, 0, 0, 0.06);
-            border-radius: 3px;
+            background-color: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
         }
 
         #chat-container::-webkit-scrollbar-track {
@@ -88,163 +96,160 @@
             }
         }
 
-        /* Avatar */
         .avatar {
             width: 24px;
             height: 24px;
-            margin-top: 3px;
             flex-shrink: 0;
+            color: var(--text-main);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--text-main);
         }
 
         .avatar svg {
-            width: 18px;
-            height: 18px;
-            fill: currentColor;
+            width: 20px;
+            height: 20px;
         }
 
-        /* Message Content */
         .message-content {
-            font-size: 15px;
+            font-size: 14px;
             line-height: 1.6;
             color: var(--text-main);
-            max-width: 92%;
-            word-wrap: break-word;
+            max-width: 95%;
         }
 
-        .message-content b {
-            font-weight: 600;
-        }
-
-        /* User Message: Minimalist Bubble */
+        /* User Bubble: High Contrast Black */
         .message-row.user {
             justify-content: flex-end;
         }
 
         .message-row.user .message-content {
-            background-color: var(--user-bubble);
+            background-color: var(--bg-bubble-user);
+            color: var(--text-inverted);
             padding: 8px 14px;
-            border-radius: var(--radius-lg);
-            border-bottom-right-radius: 2px;
-            color: var(--text-main);
+            border-radius: var(--radius-xl);
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
 
-        /* AI Message: Plain Text (Classic Notion style) */
+        /* AI Message: Clean */
         .message-row.ai .message-content {
-            padding: 0;
-            /* No background for AI to keep it clean like a doc */
+            padding-top: 2px;
         }
 
-        /* --- Floating Input Card --- */
+        /* --- Input Section --- */
         #input-container {
             position: absolute;
             bottom: 0;
             left: 0;
             right: 0;
             padding: 20px;
-            background: linear-gradient(to top, var(--bg-body) 80%, rgba(255, 255, 255, 0));
-            display: flex;
-            justify-content: center;
-        }
-
-        .notion-card {
-            width: 100%;
-            background-color: var(--bg-input);
-            border: 1px solid var(--border-input);
-            border-radius: var(--radius-lg);
-            box-shadow: 0 4px 12px var(--shadow-input);
-            padding: 12px 14px;
+            background: linear-gradient(to top, var(--bg-body) 85%, rgba(250, 250, 250, 0));
             display: flex;
             flex-direction: column;
+            gap: 12px;
+            align-items: center;
+        }
+
+        /* Quick Suggestions */
+        #suggestions {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            scrollbar-width: none;
+            /* Hide scrollbar */
+        }
+
+        #suggestions::-webkit-scrollbar {
+            display: none;
+        }
+
+        .chip {
+            background-color: var(--bg-chip);
+            border: 1px solid var(--border-chip);
+            color: var(--text-muted);
+            padding: 6px 12px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+        }
+
+        .chip:hover {
+            color: var(--text-main);
+            background-color: var(--hover-chip);
+            border-color: #d4d4d8;
+            transform: translateY(-1px);
+        }
+
+        /* Input Card */
+        .notion-card {
+            width: 100%;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-float);
+            padding: 12px;
+            display: flex;
+            align-items: flex-end;
+            /* Align textarea and button to bottom */
             gap: 8px;
             transition: box-shadow 0.2s, border-color 0.2s;
         }
 
         .notion-card:focus-within {
-            border-color: #d0d0d0;
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
-            /* Slightly lifted */
+            border-color: #a1a1aa;
+            box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.12);
         }
 
-        /* Input Field */
         textarea {
+            flex: 1;
             border: none;
             background: transparent;
             font-family: inherit;
             font-size: 14px;
             color: var(--text-main);
-            padding: 0;
+            padding: 4px 2px;
             margin: 0;
             outline: none;
             resize: none;
             min-height: 24px;
-            max-height: 150px;
+            max-height: 120px;
             line-height: 1.5;
         }
 
         textarea::placeholder {
-            color: #a5a5a3;
-        }
-
-        /* Toolbar Actions */
-        .toolbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-top: 4px;
-        }
-
-        .toolbar-left {
-            display: flex;
-            gap: 4px;
-        }
-
-        .action-btn {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 12px;
-            color: var(--text-muted);
-            cursor: pointer;
-            transition: background 0.1s;
-        }
-
-        .action-btn:hover {
-            background-color: var(--bg-cursor);
-            color: var(--text-main);
-        }
-
-        .action-btn svg {
-            width: 14px;
-            height: 14px;
-            stroke-width: 2px;
+            color: #a1a1aa;
         }
 
         /* Send Button */
         #send-btn {
-            background: transparent;
+            background: #f4f4f5;
+            /* Zinc-100 */
             border: none;
-            width: 28px;
-            height: 28px;
-            border-radius: 4px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #d0d0d0;
+            color: #a1a1aa;
             cursor: default;
-            /* Disabled state initially */
-            transition: color 0.1s, background 0.1s;
+            transition: all 0.2s;
+            flex-shrink: 0;
         }
 
         #send-btn.active {
             cursor: pointer;
-            color: var(--accent-blue);
-            background-color: rgba(0, 122, 255, 0.1);
+            background-color: #18181b;
+            /* Zinc-900 (Black) */
+            color: white;
+            transform: scale(1.05);
         }
 
         #send-btn svg {
@@ -253,17 +258,17 @@
             fill: currentColor;
         }
 
-        /* Loading Dots */
+        /* Loading */
         .typing-dots {
             display: flex;
             gap: 4px;
-            padding: 4px 0;
+            padding: 6px 0;
         }
 
         .dot {
-            width: 4px;
-            height: 4px;
-            background-color: #999;
+            width: 5px;
+            height: 5px;
+            background: #a1a1aa;
             border-radius: 50%;
             animation: dance 1.4s infinite ease-in-out both;
         }
@@ -297,38 +302,33 @@
         <!-- AI Greeting -->
         <div class="message-row ai">
             <div class="avatar">
-                <!-- Notion Sparkle Icon -->
-                <svg viewBox="0 0 24 24">
-                    <path d="M9 19l2.5-9L19 12l-9-2.5L9 5l-2.5 9L2 12l9 2.5z" />
+                <!-- Sparkle -->
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L14.4 7.2L20 9L14.4 10.8L12 16L9.6 10.8L4 9L9.6 7.2L12 2Z" fill="currentColor" />
                 </svg>
             </div>
             <div class="message-content">
-                How can I assist with your pipeline simulation?
+                How can I assist with your pipeline simulation today?
             </div>
         </div>
     </div>
 
-    <!-- Floating Input -->
+    <!-- Bottom Section -->
     <div id="input-container">
+        <!-- Quick Actions / Suggestions -->
+        <div id="suggestions">
+            <div class="chip" onclick="usePrompt('How to optimized flow?')">Optimized flow</div>
+            <div class="chip" onclick="usePrompt('Analyze pressure drop')">Pressure drop</div>
+        </div>
+
+        <!-- Input Card -->
         <div class="notion-card">
             <textarea id="message-input" placeholder="Ask AI anything..." rows="1"></textarea>
-
-            <div class="toolbar">
-                <div class="toolbar-left">
-                    <div class="action-btn">
-                        <!-- Plus icon -->
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path d="M12 5v14M5 12h14" />
-                        </svg>
-                        Attach
-                    </div>
-                </div>
-                <button id="send-btn">
-                    <svg viewBox="0 0 24 24">
-                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
-                    </svg>
-                </button>
-            </div>
+            <button id="send-btn">
+                <svg viewBox="0 0 24 24">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+                </svg>
+            </button>
         </div>
     </div>
 
@@ -336,21 +336,23 @@
         const chatContainer = document.getElementById('chat-container');
         const input = document.getElementById('message-input');
         const sendBtn = document.getElementById('send-btn');
+        const suggestions = document.getElementById('suggestions');
         let conversationId = localStorage.getItem('sps_conversation_id') || null;
 
-        // Auto-Resize & State
+        function usePrompt(text) {
+            input.value = text;
+            input.dispatchEvent(new Event('input'));
+            input.focus();
+            sendMessage();
+        }
+
         input.addEventListener('input', function () {
             this.style.height = 'auto';
             this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-
-            if (this.value.trim().length > 0) {
-                sendBtn.classList.add('active');
-            } else {
-                sendBtn.classList.remove('active');
-            }
+            if (this.value.trim().length > 0) sendBtn.classList.add('active');
+            else sendBtn.classList.remove('active');
         });
 
-        // Enter to Send
         input.addEventListener('keydown', function (e) {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -366,10 +368,11 @@
             const text = input.value.trim();
             if (!text) return;
 
-            // UI Reset
+            // UI Optimistic Updates
             input.value = '';
             input.style.height = 'auto';
             sendBtn.classList.remove('active');
+            suggestions.style.display = 'none'; // Hide suggestions after first message
             input.focus();
 
             appendMessage('user', text);
@@ -395,7 +398,7 @@
 
             } catch (error) {
                 removeLoading(loadingId);
-                appendMessage('ai', "Unable to connect to AI.");
+                appendMessage('ai', "Error connecting.");
             }
         }
 
@@ -406,17 +409,13 @@
             if (role === 'ai') {
                 const avatar = document.createElement('div');
                 avatar.className = 'avatar';
-                avatar.innerHTML = `<svg viewBox="0 0 24 24"><path d="M9 19l2.5-9L19 12l-9-2.5L9 5l-2.5 9L2 12l9 2.5z"/></svg>`;
+                avatar.innerHTML = `<svg viewBox="0 0 24 24" fill="none"><path d="M12 2L14.4 7.2L20 9L14.4 10.8L12 16L9.6 10.8L4 9L9.6 7.2L12 2Z" fill="currentColor"/></svg>`;
                 row.appendChild(avatar);
             }
 
             const content = document.createElement('div');
             content.className = 'message-content';
-
-            // Bold support
-            let formatted = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
-            content.innerHTML = formatted;
-
+            content.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
             row.appendChild(content);
             chatContainer.appendChild(row);
             scrollToBottom();
@@ -428,7 +427,7 @@
             row.id = id;
             row.className = 'message-row ai';
             row.innerHTML = `
-                <div class="avatar"><svg viewBox="0 0 24 24"><path d="M9 19l2.5-9L19 12l-9-2.5L9 5l-2.5 9L2 12l9 2.5z"/></svg></div>
+                <div class="avatar"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2L14.4 7.2L20 9L14.4 10.8L12 16L9.6 10.8L4 9L9.6 7.2L12 2Z" fill="currentColor"/></svg></div>
                 <div class="message-content">
                     <div class="typing-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
                 </div>
@@ -444,9 +443,7 @@
         }
 
         function scrollToBottom() {
-            setTimeout(() => {
-                chatContainer.scrollTop = chatContainer.scrollHeight;
-            }, 50);
+            setTimeout(() => { chatContainer.scrollTop = chatContainer.scrollHeight; }, 50);
         }
     </script>
 </body>
