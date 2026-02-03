@@ -10,23 +10,22 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* Ultra-Clean Palette */
+            /* Palette */
             --bg-body: #ffffff;
             --text-main: #1a1a1a;
             --text-muted: #888888;
 
-            /* Chat Bubbles */
             --bg-user: #000000;
             --text-user: #ffffff;
 
-            /* Input Card */
-            --bg-card: rgba(255, 255, 255, 0.95);
-            --border-card: rgba(0, 0, 0, 0.06);
+            --bg-card: rgba(255, 255, 255, 0.9);
+            --border-card: rgba(0, 0, 0, 0.08);
             --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.08);
-            --shadow-focus: 0 8px 32px rgba(0, 0, 0, 0.12);
+
+            --bg-sidebar: #f9f9f9;
+            --sidebar-width: 260px;
 
             --font-family: 'Inter', -apple-system, sans-serif;
-            --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
             --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
         }
 
@@ -35,7 +34,7 @@
         }
 
         ::selection {
-            background: #f3f3f3;
+            background: #eee;
             color: #000;
         }
 
@@ -50,10 +49,153 @@
             color: var(--text-main);
             overflow: hidden;
             -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
         }
 
-        /* --- Main Layout --- */
+        /* --- Sidebar (History) --- */
+        #history-sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: var(--sidebar-width);
+            background: var(--bg-sidebar);
+            border-right: 1px solid #eaeaea;
+            transform: translateX(-100%);
+            /* Hidden by default */
+            transition: transform 0.4s var(--ease-out);
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #history-sidebar.open {
+            transform: translateX(0);
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .new-chat-btn {
+            width: 100%;
+            margin: 0 20px;
+            padding: 10px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            color: #333;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .new-chat-btn:hover {
+            border-color: #bbb;
+            background: #fafafa;
+        }
+
+        .new-chat-btn svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .history-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .history-item {
+            padding: 10px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #444;
+            transition: background 0.1s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .history-item:hover {
+            background: #eee;
+            color: #000;
+        }
+
+        .history-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #999;
+            margin-top: 16px;
+            margin-bottom: 8px;
+            padding-left: 12px;
+        }
+
+        /* --- Main Overlay (when sidebar open) --- */
+        #overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            z-index: 15;
+        }
+
+        #overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* --- Header / Menu Trigger --- */
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 16px;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            pointer-events: none;
+            /* Let clicks pass through to content */
+        }
+
+        #menu-btn {
+            pointer-events: auto;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            opacity: 0.5;
+            transition: opacity 0.2s;
+            padding: 8px;
+            border-radius: 6px;
+        }
+
+        #menu-btn:hover {
+            opacity: 1;
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        #menu-btn svg {
+            width: 20px;
+            height: 20px;
+            stroke: #333;
+        }
+
+        /* --- Chat Layout --- */
         #chat-container {
             height: 100%;
             overflow-y: auto;
@@ -61,17 +203,15 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
-            transition: justify-content 0.6s var(--ease-out);
+            transition: justify-content 0.5s var(--ease-out);
         }
 
         #chat-container.centered {
             justify-content: center;
         }
 
-        /* Hidden Scrollbar for cleaner look */
         #chat-container::-webkit-scrollbar {
-            width: 0px;
-            background: transparent;
+            width: 0;
         }
 
         /* --- Messages --- */
@@ -80,7 +220,7 @@
             gap: 14px;
             opacity: 0;
             transform: translateY(12px);
-            animation: slideUp 0.5s var(--ease-out) forwards;
+            animation: slideUp 0.4s var(--ease-out) forwards;
         }
 
         @keyframes slideUp {
@@ -99,7 +239,6 @@
             flex-shrink: 0;
             color: var(--text-main);
             background: #f9f9f9;
-            /* Subtle backing */
             border-radius: 6px;
         }
 
@@ -114,14 +253,12 @@
             color: var(--text-main);
             max-width: 90%;
             font-weight: 400;
-            letter-spacing: -0.01em;
         }
 
         .message-content b {
             font-weight: 600;
         }
 
-        /* User Message */
         .message-row.user {
             justify-content: flex-end;
         }
@@ -135,7 +272,7 @@
             box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
         }
 
-        /* Hero / Welcome State */
+        /* Hero */
         .message-row.welcome {
             flex-direction: column;
             align-items: center;
@@ -147,9 +284,9 @@
         .message-row.welcome .avatar {
             width: 64px;
             height: 64px;
-            background: #000000;
-            border-radius: 50%;
+            background: #000;
             color: #fff;
+            border-radius: 50%;
             margin-bottom: 8px;
             box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
         }
@@ -172,17 +309,16 @@
             display: block;
         }
 
-        /* --- Input Area --- */
+        /* Input */
         #input-container {
             position: absolute;
             bottom: 0;
             left: 0;
             right: 0;
             padding: 24px;
-            /* Modern Glassmorphism Gradient */
-            background: linear-gradient(to top, rgba(255, 255, 255, 1) 40%, rgba(255, 255, 255, 0.8) 70%, rgba(255, 255, 255, 0));
-            backdrop-filter: blur(2px);
-            /* Subtle blur behind */
+            background: linear-gradient(to top, rgba(255, 255, 255, 1) 40%, rgba(255, 255, 255, 0));
+            /* Glassmorphism */
+            backdrop-filter: blur(4px);
             display: flex;
             justify-content: center;
             z-index: 10;
@@ -197,14 +333,12 @@
             padding: 12px 16px;
             display: flex;
             align-items: center;
-            /* Align center vertically */
             gap: 12px;
             transition: all 0.3s var(--ease-out);
         }
 
         .notion-card:focus-within {
             border-color: rgba(0, 0, 0, 0.15);
-            box-shadow: var(--shadow-focus);
             transform: translateY(-2px);
         }
 
@@ -296,11 +430,40 @@
 
 <body>
 
+    <!-- Overlay for mobile/sidebar -->
+    <div id="overlay"></div>
+
+    <!-- Sidebar -->
+    <div id="history-sidebar">
+        <div class="sidebar-header"></div>
+        <button class="new-chat-btn" id="new-chat-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 5v14M5 12h14" />
+            </svg>
+            New Chat
+        </button>
+        <div class="history-label">Previous 7 Days</div>
+        <div class="history-list" id="history-list">
+            <!-- Items injected by JS -->
+        </div>
+    </div>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <button id="menu-btn" title="History">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+    </div>
+
     <div id="chat-container" class="centered">
         <!-- Hero Welcome -->
         <div id="welcome-msg" class="message-row welcome">
             <div class="avatar">
-                <!-- Abstract "AI" Logo -->
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
                     <path d="M12 8V12L14 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
@@ -327,12 +490,112 @@
     </div>
 
     <script>
+        // DOM Elements
         const chatContainer = document.getElementById('chat-container');
         const welcomeMsg = document.getElementById('welcome-msg');
         const input = document.getElementById('message-input');
         const sendBtn = document.getElementById('send-btn');
+        const menuBtn = document.getElementById('menu-btn');
+        const sidebar = document.getElementById('history-sidebar');
+        const overlay = document.getElementById('overlay');
+        const historyList = document.getElementById('history-list');
+        const newChatBtn = document.getElementById('new-chat-btn');
+
         let conversationId = localStorage.getItem('sps_conversation_id') || null;
 
+        // --- Sidebar Logic ---
+        function toggleSidebar() {
+            const isOpen = sidebar.classList.toggle('open');
+            overlay.classList.toggle('active', isOpen);
+            if (isOpen) loadHistory();
+        }
+
+        menuBtn.addEventListener('click', toggleSidebar);
+        overlay.addEventListener('click', toggleSidebar);
+
+        async function loadHistory() {
+            try {
+                // Remove existing
+                historyList.innerHTML = '<div style="padding:10px; font-size:12px; color:#999;">Loading...</div>';
+
+                const res = await fetch('/api/conversations/');
+                if (!res.ok) throw new Error('Failed');
+                const convs = await res.json();
+
+                historyList.innerHTML = '';
+                if (convs.length === 0) {
+                    historyList.innerHTML = '<div style="padding:10px; font-size:12px; color:#999;">No history yet.</div>';
+                    return;
+                }
+
+                convs.forEach(c => {
+                    const el = document.createElement('div');
+                    el.className = 'history-item';
+                    el.textContent = c.title || 'Untitled';
+                    el.onclick = () => loadConversation(c.id);
+                    historyList.appendChild(el);
+                });
+            } catch (e) {
+                historyList.innerHTML = '<div style="padding:10px; font-size:12px; color:red;">Error loading history.</div>';
+            }
+        }
+
+        async function loadConversation(id) {
+            // Close sidebar
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+
+            // Reset UI
+            chatContainer.innerHTML = ''; // clear chat
+            chatContainer.classList.remove('centered');
+            if (welcomeMsg) welcomeMsg.style.display = 'none';
+
+            // Show Loading
+            const loadingId = appendLoading('Loading chat...');
+
+            try {
+                const res = await fetch(`/api/conversations/${id}/messages/`);
+                if (!res.ok) throw new Error('Failed');
+                const messages = await res.json();
+
+                removeLoading(loadingId);
+
+                // Render Messages
+                messages.forEach(m => {
+                    if (m.role !== 'system') {
+                        appendMessage(m.role === 'assistant' ? 'ai' : 'user', m.content);
+                    }
+                });
+
+                // Update State
+                conversationId = id;
+                localStorage.setItem('sps_conversation_id', id);
+
+            } catch (e) {
+                removeLoading(loadingId);
+                appendMessage('ai', 'Could not load conversation history.');
+            }
+        }
+
+        newChatBtn.addEventListener('click', () => {
+            // Close sidebar
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+
+            // Clear State
+            conversationId = null;
+            localStorage.removeItem('sps_conversation_id');
+
+            // Reset UI to Hero
+            chatContainer.innerHTML = '';
+            chatContainer.classList.add('centered');
+            chatContainer.appendChild(welcomeMsg);
+            welcomeMsg.style.display = 'flex';
+            welcomeMsg.style.opacity = '1';
+        });
+
+
+        // --- Chat Logic ---
         input.addEventListener('input', function () {
             this.style.height = 'auto';
             this.style.height = Math.min(this.scrollHeight, 120) + 'px';
@@ -358,7 +621,6 @@
             // Transition
             if (chatContainer.classList.contains('centered')) {
                 chatContainer.classList.remove('centered');
-                // Fade out welcome message smoothly
                 if (welcomeMsg) {
                     welcomeMsg.style.opacity = '0';
                     setTimeout(() => welcomeMsg.style.display = 'none', 300);
@@ -410,13 +672,15 @@
 
             const content = document.createElement('div');
             content.className = 'message-content';
+            // Simple markdown-ish
             content.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
+
             row.appendChild(content);
             chatContainer.appendChild(row);
             scrollToBottom();
         }
 
-        function appendLoading() {
+        function appendLoading(text) {
             const id = 'loading-' + Date.now();
             const row = document.createElement('div');
             row.id = id;
@@ -424,7 +688,8 @@
             row.innerHTML = `
                 <div class="avatar"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2L14.4 7.2L20 9L14.4 10.8L12 16L9.6 10.8L4 9L9.6 7.2L12 2Z" fill="currentColor"/></svg></div>
                 <div class="message-content">
-                    <div class="typing-indicator"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+                    ${text ? `<div style="font-size:13px; color:#999;">${text}</div>` :
+                    `<div class="typing-indicator"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`}
                 </div>
             `;
             chatContainer.appendChild(row);
