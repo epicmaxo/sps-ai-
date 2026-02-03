@@ -13,11 +13,19 @@ from datetime import datetime
 app = FastAPI(title="SPS AI Minimal")
 
 # --- UI Endpoint ---
+# --- UI Endpoint ---
 @app.get("/chat-ui", response_class=HTMLResponse)
 async def chat_ui():
-    with open("templates/chat_iframe.html", "r", encoding="utf-8") as f:
-        html_content = f.read()
-    return HTMLResponse(content=html_content, status_code=200)
+    print("GET /chat-ui requested")
+    try:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        file_path = os.path.join(base_dir, "templates", "chat_iframe.html")
+        with open(file_path, "r", encoding="utf-8") as f:
+            html_content = f.read()
+        return HTMLResponse(content=html_content, status_code=200)
+    except Exception as e:
+        print(f"Error serving chat UI: {e}")
+        return HTMLResponse(content=f"<h1>Error loading UI</h1><p>{e}</p>", status_code=500)
 
 # CORS
 app.add_middleware(
