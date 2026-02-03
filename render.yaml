@@ -1,9 +1,3 @@
-databases:
-  - name: sps-ai-db
-    databaseName: sps_ai
-    user: sps_user
-    plan: free
-
 services:
   - type: web
     name: sps-ai
@@ -16,6 +10,4 @@ services:
       - key: OPENAI_API_KEY
         sync: false
       - key: DATABASE_URL
-        fromDatabase:
-          name: sps-ai-db
-          property: connectionString
+        sync: false
