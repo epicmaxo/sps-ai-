@@ -1,3 +1,9 @@
+databases:
+  - name: sps-ai-db
+    databaseName: sps_ai
+    user: sps_user
+    plan: free # Optional: Remove or change for production
+
 services:
   - type: web
     name: sps-ai
@@ -8,6 +14,8 @@ services:
       - key: PYTHON_VERSION
         value: 3.11.0
       - key: OPENAI_API_KEY
-        generate: false
+        sync: false
       - key: DATABASE_URL
-        generate: false
+        fromDatabase:
+          name: sps-ai-db
+          property: connectionString
