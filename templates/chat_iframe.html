@@ -5,43 +5,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SPS Assistant</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        /* Elite Zinc Palette */
         :root {
-            /* Backgrounds */
-            --bg-body: #fafafa;
-            /* Zinc-50ish */
-            --bg-card: #ffffff;
-            --bg-bubble-user: #18181b;
-            /* Zinc-900 */
-            --bg-bubble-ai: transparent;
+            /* Ultra-Clean Palette */
+            --bg-body: #ffffff;
+            --text-main: #1a1a1a;
+            --text-muted: #888888;
 
-            /* Text */
-            --text-main: #27272a;
-            /* Zinc-800 */
-            --text-muted: #71717a;
-            /* Zinc-500 */
-            --text-inverted: #ffffff;
+            /* Chat Bubbles */
+            --bg-user: #000000;
+            --text-user: #ffffff;
 
-            /* Borders & Shadows */
-            --border-subtle: #e4e4e7;
-            /* Zinc-200 */
-            --shadow-float: 0 4px 20px -2px rgba(0, 0, 0, 0.08);
+            /* Input Card */
+            --bg-card: rgba(255, 255, 255, 0.95);
+            --border-card: rgba(0, 0, 0, 0.06);
+            --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.08);
+            --shadow-focus: 0 8px 32px rgba(0, 0, 0, 0.12);
 
-            /* Suggestions */
-            --bg-chip: #ffffff;
-            --border-chip: #e4e4e7;
-            --hover-chip: #f4f4f5;
-
-            /* Dimensions */
-            --radius-xl: 16px;
-            --radius-md: 8px;
-            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-family: 'Inter', -apple-system, sans-serif;
+            --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         * {
             box-sizing: border-box;
+        }
+
+        ::selection {
+            background: #f3f3f3;
+            color: #000;
         }
 
         html,
@@ -55,47 +50,40 @@
             color: var(--text-main);
             overflow: hidden;
             -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
-        /* --- Chat Area --- */
+        /* --- Main Layout --- */
         #chat-container {
             height: 100%;
             overflow-y: auto;
-            /* Bottom padding clears the input area */
-            padding: 20px 20px 160px 20px;
+            padding: 24px 24px 140px 24px;
             display: flex;
             flex-direction: column;
-            gap: 24px;
-            transition: justify-content 0.3s;
+            gap: 20px;
+            transition: justify-content 0.6s var(--ease-out);
         }
 
-        /* Initial Centered State */
         #chat-container.centered {
             justify-content: center;
         }
 
+        /* Hidden Scrollbar for cleaner look */
         #chat-container::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        #chat-container::-webkit-scrollbar-thumb {
-            background-color: rgba(0, 0, 0, 0.1);
-            border-radius: 4px;
-        }
-
-        #chat-container::-webkit-scrollbar-track {
+            width: 0px;
             background: transparent;
         }
 
+        /* --- Messages --- */
         .message-row {
             display: flex;
-            gap: 12px;
+            gap: 14px;
             opacity: 0;
-            transform: translateY(10px);
-            animation: fadeIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            transform: translateY(12px);
+            animation: slideUp 0.5s var(--ease-out) forwards;
         }
 
-        @keyframes fadeIn {
+        @keyframes slideUp {
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -103,143 +91,121 @@
         }
 
         .avatar {
-            width: 24px;
-            height: 24px;
-            flex-shrink: 0;
-            color: var(--text-main);
+            width: 28px;
+            height: 28px;
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
+            color: var(--text-main);
+            background: #f9f9f9;
+            /* Subtle backing */
+            border-radius: 6px;
         }
 
         .avatar svg {
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
         }
 
         .message-content {
-            font-size: 14px;
+            font-size: 15px;
             line-height: 1.6;
             color: var(--text-main);
-            max-width: 95%;
+            max-width: 90%;
+            font-weight: 400;
+            letter-spacing: -0.01em;
         }
 
-        /* Welcome Hero Style */
+        .message-content b {
+            font-weight: 600;
+        }
+
+        /* User Message */
+        .message-row.user {
+            justify-content: flex-end;
+        }
+
+        .message-row.user .message-content {
+            background-color: var(--bg-user);
+            color: var(--text-user);
+            padding: 10px 18px;
+            border-radius: 14px;
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Hero / Welcome State */
         .message-row.welcome {
             flex-direction: column;
             align-items: center;
             text-align: center;
             gap: 16px;
             margin-bottom: 40px;
-            /* Visual balance */
         }
 
         .message-row.welcome .avatar {
-            width: 48px;
-            height: 48px;
-            background: #f4f4f5;
+            width: 64px;
+            height: 64px;
+            background: #000000;
             border-radius: 50%;
-            color: #18181b;
+            color: #fff;
+            margin-bottom: 8px;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
         }
 
         .message-row.welcome .avatar svg {
-            width: 24px;
-            height: 24px;
+            width: 32px;
+            height: 32px;
         }
 
         .message-row.welcome .message-content {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 500;
-            color: var(--text-main);
+            color: #111;
         }
 
-        /* User Bubble: High Contrast Black */
-        .message-row.user {
-            justify-content: flex-end;
+        .message-row.welcome .sub-text {
+            font-size: 14px;
+            color: #999;
+            margin-top: 4px;
+            display: block;
         }
 
-        .message-row.user .message-content {
-            background-color: var(--bg-bubble-user);
-            color: var(--text-inverted);
-            padding: 8px 14px;
-            border-radius: var(--radius-xl);
-            border-bottom-right-radius: 4px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        /* AI Message: Clean */
-        .message-row.ai .message-content {
-            padding-top: 2px;
-        }
-
-        /* --- Input Section --- */
+        /* --- Input Area --- */
         #input-container {
             position: absolute;
             bottom: 0;
             left: 0;
             right: 0;
-            padding: 20px;
-            background: linear-gradient(to top, var(--bg-body) 85%, rgba(250, 250, 250, 0));
+            padding: 24px;
+            /* Modern Glassmorphism Gradient */
+            background: linear-gradient(to top, rgba(255, 255, 255, 1) 40%, rgba(255, 255, 255, 0.8) 70%, rgba(255, 255, 255, 0));
+            backdrop-filter: blur(2px);
+            /* Subtle blur behind */
             display: flex;
-            flex-direction: column;
-            gap: 12px;
-            align-items: center;
+            justify-content: center;
+            z-index: 10;
         }
 
-        /* Quick Suggestions */
-        #suggestions {
-            display: flex;
-            gap: 8px;
-            width: 100%;
-            overflow-x: auto;
-            padding-bottom: 4px;
-            scrollbar-width: none;
-            /* Hide scrollbar */
-        }
-
-        #suggestions::-webkit-scrollbar {
-            display: none;
-        }
-
-        .chip {
-            background-color: var(--bg-chip);
-            border: 1px solid var(--border-chip);
-            color: var(--text-muted);
-            padding: 6px 12px;
-            border-radius: 100px;
-            font-size: 12px;
-            font-weight: 500;
-            white-space: nowrap;
-            cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
-        }
-
-        .chip:hover {
-            color: var(--text-main);
-            background-color: var(--hover-chip);
-            border-color: #d4d4d8;
-            transform: translateY(-1px);
-        }
-
-        /* Input Card */
         .notion-card {
             width: 100%;
             background-color: var(--bg-card);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-xl);
-            box-shadow: var(--shadow-float);
-            padding: 12px;
+            border: 1px solid var(--border-card);
+            border-radius: 16px;
+            box-shadow: var(--shadow-card);
+            padding: 12px 16px;
             display: flex;
-            align-items: flex-end;
-            /* Align textarea and button to bottom */
-            gap: 8px;
-            transition: box-shadow 0.2s, border-color 0.2s;
+            align-items: center;
+            /* Align center vertically */
+            gap: 12px;
+            transition: all 0.3s var(--ease-out);
         }
 
         .notion-card:focus-within {
-            border-color: #a1a1aa;
-            box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.12);
+            border-color: rgba(0, 0, 0, 0.15);
+            box-shadow: var(--shadow-focus);
+            transform: translateY(-2px);
         }
 
         textarea {
@@ -247,25 +213,23 @@
             border: none;
             background: transparent;
             font-family: inherit;
-            font-size: 14px;
+            font-size: 15px;
             color: var(--text-main);
-            padding: 4px 2px;
+            padding: 2px 0;
             margin: 0;
             outline: none;
             resize: none;
-            min-height: 24px;
+            height: 24px;
             max-height: 120px;
             line-height: 1.5;
         }
 
         textarea::placeholder {
-            color: #a1a1aa;
+            color: #b0b0b0;
         }
 
-        /* Send Button */
         #send-btn {
-            background: #f4f4f5;
-            /* Zinc-100 */
+            background: transparent;
             border: none;
             width: 32px;
             height: 32px;
@@ -273,39 +237,38 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #a1a1aa;
+            color: #d1d1d1;
             cursor: default;
-            transition: all 0.2s;
+            transition: all 0.3s var(--ease-out);
             flex-shrink: 0;
         }
 
         #send-btn.active {
             cursor: pointer;
-            background-color: #18181b;
-            /* Zinc-900 (Black) */
-            color: white;
+            color: #fff;
+            background-color: #000;
             transform: scale(1.05);
         }
 
         #send-btn svg {
-            width: 16px;
-            height: 16px;
+            width: 18px;
+            height: 18px;
             fill: currentColor;
         }
 
         /* Loading */
-        .typing-dots {
+        .typing-indicator {
             display: flex;
             gap: 4px;
             padding: 6px 0;
         }
 
         .dot {
-            width: 5px;
-            height: 5px;
-            background: #a1a1aa;
+            width: 4px;
+            height: 4px;
+            background: #ccc;
             border-radius: 50%;
-            animation: dance 1.4s infinite ease-in-out both;
+            animation: bounce 1.4s infinite ease-in-out both;
         }
 
         .dot:nth-child(1) {
@@ -316,7 +279,7 @@
             animation-delay: -0.16s;
         }
 
-        @keyframes dance {
+        @keyframes bounce {
 
             0%,
             80%,
@@ -334,31 +297,27 @@
 <body>
 
     <div id="chat-container" class="centered">
-        <!-- AI Greeting Hero -->
+        <!-- Hero Welcome -->
         <div id="welcome-msg" class="message-row welcome">
             <div class="avatar">
-                <!-- Sparkle -->
+                <!-- Abstract "AI" Logo -->
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2L14.4 7.2L20 9L14.4 10.8L12 16L9.6 10.8L4 9L9.6 7.2L12 2Z" fill="currentColor" />
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                    <path d="M12 8V12L14 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    <path d="M12 16H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                 </svg>
             </div>
             <div class="message-content">
-                I'm SPS Assistant. How can I help optimize your pipeline content?
+                SPS Assistant
+                <span class="sub-text">Ask anything about pipeline optimization.</span>
             </div>
         </div>
     </div>
 
-    <!-- Bottom Section -->
+    <!-- Input -->
     <div id="input-container">
-        <!-- Quick Actions / Suggestions -->
-        <div id="suggestions">
-            <div class="chip" onclick="usePrompt('How to optimized flow?')">Optimized flow</div>
-            <div class="chip" onclick="usePrompt('Analyze pressure drop')">Pressure drop</div>
-        </div>
-
-        <!-- Input Card -->
         <div class="notion-card">
-            <textarea id="message-input" placeholder="Ask AI anything..." rows="1"></textarea>
+            <textarea id="message-input" placeholder="Type a message..." rows="1"></textarea>
             <button id="send-btn">
                 <svg viewBox="0 0 24 24">
                     <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
@@ -372,15 +331,7 @@
         const welcomeMsg = document.getElementById('welcome-msg');
         const input = document.getElementById('message-input');
         const sendBtn = document.getElementById('send-btn');
-        const suggestions = document.getElementById('suggestions');
         let conversationId = localStorage.getItem('sps_conversation_id') || null;
-
-        function usePrompt(text) {
-            input.value = text;
-            input.dispatchEvent(new Event('input'));
-            input.focus();
-            sendMessage();
-        }
 
         input.addEventListener('input', function () {
             this.style.height = 'auto';
@@ -404,15 +355,18 @@
             const text = input.value.trim();
             if (!text) return;
 
-            // UI Transitions
+            // Transition
             if (chatContainer.classList.contains('centered')) {
                 chatContainer.classList.remove('centered');
-                if (welcomeMsg) welcomeMsg.style.display = 'none'; // Hide hero, start fresh chat
+                // Fade out welcome message smoothly
+                if (welcomeMsg) {
+                    welcomeMsg.style.opacity = '0';
+                    setTimeout(() => welcomeMsg.style.display = 'none', 300);
+                }
             }
-            suggestions.style.display = 'none';
 
             input.value = '';
-            input.style.height = 'auto';
+            input.style.height = '24px';
             sendBtn.classList.remove('active');
             input.focus();
 
@@ -439,7 +393,7 @@
 
             } catch (error) {
                 removeLoading(loadingId);
-                appendMessage('ai', "Error connecting.");
+                appendMessage('ai', "I'm having trouble connecting right now.");
             }
         }
 
@@ -470,7 +424,7 @@
             row.innerHTML = `
                 <div class="avatar"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2L14.4 7.2L20 9L14.4 10.8L12 16L9.6 10.8L4 9L9.6 7.2L12 2Z" fill="currentColor"/></svg></div>
                 <div class="message-content">
-                    <div class="typing-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+                    <div class="typing-indicator"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
                 </div>
             `;
             chatContainer.appendChild(row);
@@ -484,7 +438,7 @@
         }
 
         function scrollToBottom() {
-            setTimeout(() => { chatContainer.scrollTop = chatContainer.scrollHeight; }, 50);
+            setTimeout(() => { chatContainer.scrollTop = chatContainer.scrollHeight; }, 100);
         }
     </script>
 </body>
