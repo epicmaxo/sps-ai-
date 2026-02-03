@@ -66,6 +66,12 @@
             display: flex;
             flex-direction: column;
             gap: 24px;
+            transition: justify-content 0.3s;
+        }
+
+        /* Initial Centered State */
+        #chat-container.centered {
+            justify-content: center;
         }
 
         #chat-container::-webkit-scrollbar {
@@ -116,6 +122,35 @@
             line-height: 1.6;
             color: var(--text-main);
             max-width: 95%;
+        }
+
+        /* Welcome Hero Style */
+        .message-row.welcome {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 16px;
+            margin-bottom: 40px;
+            /* Visual balance */
+        }
+
+        .message-row.welcome .avatar {
+            width: 48px;
+            height: 48px;
+            background: #f4f4f5;
+            border-radius: 50%;
+            color: #18181b;
+        }
+
+        .message-row.welcome .avatar svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .message-row.welcome .message-content {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-main);
         }
 
         /* User Bubble: High Contrast Black */
@@ -298,9 +333,9 @@
 
 <body>
 
-    <div id="chat-container">
-        <!-- AI Greeting -->
-        <div class="message-row ai">
+    <div id="chat-container" class="centered">
+        <!-- AI Greeting Hero -->
+        <div id="welcome-msg" class="message-row welcome">
             <div class="avatar">
                 <!-- Sparkle -->
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -334,6 +369,7 @@
 
     <script>
         const chatContainer = document.getElementById('chat-container');
+        const welcomeMsg = document.getElementById('welcome-msg');
         const input = document.getElementById('message-input');
         const sendBtn = document.getElementById('send-btn');
         const suggestions = document.getElementById('suggestions');
@@ -368,11 +404,16 @@
             const text = input.value.trim();
             if (!text) return;
 
-            // UI Optimistic Updates
+            // UI Transitions
+            if (chatContainer.classList.contains('centered')) {
+                chatContainer.classList.remove('centered');
+                if (welcomeMsg) welcomeMsg.style.display = 'none'; // Hide hero, start fresh chat
+            }
+            suggestions.style.display = 'none';
+
             input.value = '';
             input.style.height = 'auto';
             sendBtn.classList.remove('active');
-            suggestions.style.display = 'none'; // Hide suggestions after first message
             input.focus();
 
             appendMessage('user', text);
