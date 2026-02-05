@@ -116,27 +116,89 @@ async def chat_endpoint(req: ChatRequest, session: Session = Depends(get_session
     session.add(user_msg)
     session.commit()
 
-    # 3. Call OpenAI (Simple, no RAG for "minimal", but we can add system prompt)
+    # 3. Call OpenAI with Elite RAG
     # Fetch history for context
     history = session.exec(select(Message).where(Message.conversation_id == conversation.id).order_by(Message.created_at)).all()
     
-    system_prompt = """You are the SPS Assistant, an elite, world-class expert in Pipeline Simulation and Flow Assurance.
+    # RAG Retrieval
+    retrieved_context = ""
+    sources = []
+    
+    index_path = "faiss_index"
+    if os.path.exists(index_path) and user_msg_content:
+        try:
+             from langchain_community.vectorstores import FAISS
+             from langchain_openai import OpenAIEmbeddings
+             
+             embeddings = OpenAIEmbeddings(api_key=api_key)
+             vector_store = FAISS.load_local(index_path, embeddings, allow_dangerous_deserialization=True)
+             
+             # --- ELITE: Multi-Query Generation ---
+             # Generate 3 variations of the question to find technical nuances
+             mq_prompt = f"You are an AI research assistant. Generate 3 different search queries to find information about the following user question in a technical pipeline manual. Output ONLY the queries, one per line.\n\nUser Question: {user_msg_content}"
+             
+             mq_completion = openai_client.chat.completions.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": mq_prompt}],
+                temperature=0.7
+             )
+             generated_queries = mq_completion.choices[0].message.content.strip().split("\n")
+             # Clean queries
+             queries = [q.strip("- ").strip() for q in generated_queries if q.strip()]
+             queries.append(user_msg_content) # Always include original
+             
+             print(f"--- Multi-Query: {queries} ---")
+             
+             # --- Search & Dedup ---
+             all_docs = []
+             seen_content = set()
+             
+             for q in queries:
+                 docs = vector_store.similarity_search(q, k=3)
+                 for doc in docs:
+                     # Dedup by content hash or direct string
+                     if doc.page_content not in seen_content:
+                         seen_content.add(doc.page_content)
+                         all_docs.append(doc)
+             
+             # Limit to top 7 unique chunks to avoid context overflow (approx 2000 tokens)
+             final_docs = all_docs[:7]
+             
+             context_parts = []
+             for i, doc in enumerate(final_docs):
+                 fname = doc.metadata.get('source_file', 'Manual')
+                 page = doc.metadata.get('page', '?')
+                 context_parts.append(f"Source {i+1} [{fname}, Page {page}]: {doc.page_content}")
+                 sources.append({"content": doc.page_content[:200] + "...", "page": page, "file": fname})
+                 
+             retrieved_context = "\n\n".join(context_parts)
+             print(f"--- Retrieved {len(final_docs)} unique chunks from {len(queries)} queries ---")
+             
+        except Exception as e:
+            print(f"RAG Error: {e}")
+
+    system_prompt = f"""You are the SPS Assistant, an elite, world-class expert in Pipeline Simulation and Flow Assurance.
 Your goal is to assist engineers in optimizing their pipeline designs, troubleshooting flow assurance issues, and mastering the SPS simulation software.
+
+**ELITE KNOWLEDGE BASE:**
+The following text chunks are retrieved from the official manuals. They are your GROUND TRUTH.
+{retrieved_context}
 
 **Your Persona:**
 - **Tone**: Professional, precise, authoritative, and concise. Avoid fluff.
 - **Expertise**: Deep knowledge of multiphase flow, fluid dynamics, thermodynamics, and pipeline operations.
+- **Methodology**: ALWAYS analyze the provided context before answering.
+- **Strict Citation**: You MUST cite your sources when providing facts. Use the format [Filename, Page X].
 
 **Capabilities:**
 1. **Optimization**: Suggest improvements for flow rates, pressure management, and thermal performance.
 2. **Troubleshooting**: Diagnose issues like severe slugging, hydrate formation risks, and pressure drops.
-3. **Simulation Support**: Guide users through setting up boundary conditions, defining fluid properties, and interpreting simulation results.
+3. **Simulation Support**: Guide users through set up.
 
 **Guidelines:**
-- When analyzing 'pressure drop', ask about elevation profiles and fluid viscosity.
-- When discussing 'flow regimes', consider superficial velocities.
-- Always provide actionable, engineering-grade advice.
-- Format your response with clear headers and bullet points for readability."""
+- If the context contains the answer, be extremely specific.
+- If the contexts provided are irrelevant to the specific question, rely on your general knowledge but state that "The manual does not explicitly mention this, but...".
+- Format your response with clear headers and bullet points."""
     
     messages_payload = [{"role": "system", "content": system_prompt}]
     for m in history:
@@ -144,7 +206,7 @@ Your goal is to assist engineers in optimizing their pipeline designs, troublesh
 
     try:
         completion = openai_client.chat.completions.create(
-            model="gpt-4o", # or gpt-3.5-turbo check env later
+            model="gpt-4o", 
             messages=messages_payload,
             temperature=0.7
         )
@@ -174,7 +236,7 @@ Your goal is to assist engineers in optimizing their pipeline designs, troublesh
         conversation_id=conversation.id,
         message_id=ai_msg.id,
         content=ai_text,
-        sources=[]
+        sources=sources
     )
 
 @app.get("/api/conversations/", response_model=List[ConversationResponse])

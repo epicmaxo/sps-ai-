@@ -6,3 +6,10 @@ python-dotenv
 psycopg2-binary
 annotated-types
 gunicorn
+langchain
+langchain-openai
+langchain-community
+faiss-cpu
+pypdf
+tiktoken
+tqdm
